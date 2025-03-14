@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "241310692586",
+    "project_id": "qarz-daftar-db",
+    "storage_bucket": "qarz-daftar-db.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241310692586:android:9920667b0b3f5f3cedd393",
+        "android_client_info": {
+          "package_name": "com.example.qarz_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQAVbWeUL3_qG-YoDhly6EXodUDQTUASc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
