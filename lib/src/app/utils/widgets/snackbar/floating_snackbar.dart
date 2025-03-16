@@ -2,10 +2,44 @@ import 'package:flutter/material.dart';
 
 class FloatingSnackbar {
   static SnackBar? _currentSnackbar;
-  static void show({
+
+  static void showLoading({
     required BuildContext context,
     required String message,
-    bool isError = false,
+  }) {
+    _showSnackbar(
+      context: context,
+      message: message,
+      backgroundColor: Colors.blue,
+    );
+  }
+
+  static void showError({
+    required BuildContext context,
+    required String message,
+  }) {
+    _showSnackbar(
+      context: context,
+      message: message,
+      backgroundColor: Colors.red, // Xatolik uchun qizil rang
+    );
+  }
+
+  static void showSuccess({
+    required BuildContext context,
+    required String message,
+  }) {
+    _showSnackbar(
+      context: context,
+      message: message,
+      backgroundColor: Colors.green, // Muvaffaqiyat uchun yashil rang
+    );
+  }
+
+  static void _showSnackbar({
+    required BuildContext context,
+    required String message,
+    required Color backgroundColor,
   }) {
     final messenger = ScaffoldMessenger.of(context);
 
@@ -16,7 +50,7 @@ class FloatingSnackbar {
         message,
         style: const TextStyle(color: Colors.white),
       ),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      backgroundColor: backgroundColor,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(

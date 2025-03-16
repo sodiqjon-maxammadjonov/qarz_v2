@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qarz_v2/src/app/data/model/user/user_model.dart';
 import 'package:qarz_v2/src/app/presentation/bloc/login/login_bloc.dart';
@@ -7,56 +6,80 @@ import 'package:qarz_v2/src/app/presentation/bloc/login/login_bloc.dart';
 class AuthService {
   final Emitter<LoginState> emit;
   AuthService({required this.emit});
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<UserModel?> signUp(String email, String password, String name) async {
+  /// **Ro‘yxatdan o‘tish (Sign Up)**
+  Future<UserModel?> signUp(String username, String password, String name) async {
     try {
       emit(LoginLoadingState());
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+
+      // Foydalanuvchi uchun ID yaratish
+      DocumentReference userRef = _firestore.collection('users').doc();
+      String userId = userRef.id;
 
       UserModel user = UserModel(
-        id: userCredential.user!.uid,
-        email: email,
+        id: userId,
+        username: username,
+        password: password,
         name: name,
       );
 
-      await _firestore.collection('users').doc(user.id).set(user.toMap());
-      emit(LoginSuccessState(message: 'Muvafaqiyatli kirildi'));
+      // Foydalanuvchini Firestore'ga saqlash
+      await userRef.set(user.toMap());
+
+      emit(LoginSuccessState(message: 'Muvaffaqiyatli ro‘yxatdan o‘tdingiz!'));
       return user;
     } catch (e) {
-      emit(LoginErrorState(message: 'Hatolik: $e'));
+      emit(LoginErrorState(message: 'Xatolik: $e'));
       print('SignUp Error: $e');
       return null;
     }
   }
 
-  Future<UserModel?> signIn(String email, String password) async {
+  /// **Tizimga kirish (Sign In)**
+  Future<UserModel?> signIn(String username, String password) async {
     try {
-
       emit(LoginLoadingState());
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
 
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+      // Firestore'dan username bo‘yicha foydalanuvchini qidirish
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .get();
 
-      if (!userDoc.exists) return null;
+      if (querySnapshot.docs.isEmpty) {
+        emit(LoginErrorState(message: "Foydalanuvchi topilmadi!"));
+        return null;
+      }
 
-      emit(LoginSuccessState(message: 'Muvafaqiyatli kirildi: $userDoc'));
-      return UserModel.fromMap(userDoc.data() as Map<String, dynamic>, userCredential.user!.uid);
+      var userDoc = querySnapshot.docs.first;
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+      // Parolni tekshirish
+      if (userData['password'] != password) {
+        emit(LoginErrorState(message: "Noto‘g‘ri parol!"));
+        return null;
+      }
+
+      // UserModel yaratish
+      UserModel user = UserModel.fromMap(userData, userDoc.id);
+
+      emit(LoginSuccessState(message: "Muvaffaqiyatli kirildi!"));
+      return user;
     } catch (e) {
-      emit(LoginErrorState(message: 'Hatolik: $e'));
+      emit(LoginErrorState(message: "Xatolik yuz berdi: ${e.toString()}"));
       print('SignIn Error: $e');
       return null;
     }
   }
 
+  /// **Tizimdan chiqish (Sign Out)**
   Future<void> signOut() async {
-    await _auth.signOut();
+    emit(LoginLoadingState());
+    try {
+      emit(LoginSuccessState(message: "Tizimdan muvaffaqiyatli chiqildi!"));
+    } catch (e) {
+      emit(LoginErrorState(message: "Chiqishda xatolik yuz berdi!"));
+    }
   }
 }
