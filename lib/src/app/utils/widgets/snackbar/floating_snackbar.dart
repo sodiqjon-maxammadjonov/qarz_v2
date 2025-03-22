@@ -3,52 +3,82 @@ import 'package:flutter/material.dart';
 class FloatingSnackbar {
   static SnackBar? _currentSnackbar;
 
-  static void showLoading({
+  /// Muvaffaqiyatli amaliyot haqida xabar beruvchi snackbar
+  static void showSuccess({
     required BuildContext context,
     required String message,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    _showSnackbar(
+      context: context,
+      message: message,
+      backgroundColor: Colors.green,
+      duration: duration,
+      icon: const Icon(Icons.check_circle, color: Colors.white),
+    );
+  }
+
+  /// Ma'lumot yoki ogohlantirishlarni ko'rsatuvchi snackbar
+  static void showInfo({
+    required BuildContext context,
+    required String message,
+    Duration duration = const Duration(seconds: 3),
   }) {
     _showSnackbar(
       context: context,
       message: message,
       backgroundColor: Colors.blue,
+      duration: duration,
+      icon: const Icon(Icons.info, color: Colors.white),
     );
   }
 
+  /// Xatolik haqida xabar beruvchi snackbar
   static void showError({
     required BuildContext context,
     required String message,
+    Duration duration = const Duration(seconds: 3),
   }) {
     _showSnackbar(
       context: context,
       message: message,
-      backgroundColor: Colors.red, // Xatolik uchun qizil rang
+      backgroundColor: Colors.red,
+      duration: duration,
+      icon: const Icon(Icons.error, color: Colors.white),
     );
   }
 
-  static void showSuccess({
-    required BuildContext context,
-    required String message,
-  }) {
-    _showSnackbar(
-      context: context,
-      message: message,
-      backgroundColor: Colors.green, // Muvaffaqiyat uchun yashil rang
-    );
-  }
-
+  /// Barcha turdagi snackbarlarni yaratish uchun ichki metod
   static void _showSnackbar({
     required BuildContext context,
     required String message,
     required Color backgroundColor,
+    required Widget icon,
+    Duration duration = const Duration(seconds: 3),
   }) {
+    // Mavjud snackbarni o'chirish
+    if (_currentSnackbar != null) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _currentSnackbar = null;
+    }
+
     final messenger = ScaffoldMessenger.of(context);
 
-    if (_currentSnackbar != null) return;
-
     _currentSnackbar = SnackBar(
-      content: Text(
-        message,
-        style: const TextStyle(color: Colors.white),
+      content: Row(
+        children: [
+          icon,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
       backgroundColor: backgroundColor,
       behavior: SnackBarBehavior.floating,
@@ -56,7 +86,9 @@ class FloatingSnackbar {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      duration: const Duration(seconds: 3),
+      duration: duration,
+      dismissDirection: DismissDirection.horizontal,
+      elevation: 4.0,
     );
 
     messenger.showSnackBar(_currentSnackbar!).closed.then((_) {
