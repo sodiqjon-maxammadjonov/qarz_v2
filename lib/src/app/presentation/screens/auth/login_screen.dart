@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qarz_v2/src/app/presentation/screens/main/main_screen.dart';
 import 'package:qarz_v2/src/app/utils/widgets/snackbar/floating_snackbar.dart';
 import 'package:qarz_v2/src/app/utils/widgets/text/my_text_field.dart';
 
@@ -45,6 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       isLoading = false;
                     });
                   }
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainScreen()),
+                        (Route<dynamic> route) => false,
+                  );
+
                 } else if (state is LoginErrorState) {
                   FloatingSnackbar.showError(context: context, message: state.message);
                   if (mounted) {
